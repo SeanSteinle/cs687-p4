@@ -269,7 +269,7 @@ on those subgoals.  Returns a solved plan, else nil if not solved."
 
 (defun random-precondition (plan) ;NOTE: should be replaced with a heuristic based system at some point
   (let ((operator (random-elt (operators-with-preconditions (plan-operators plan)))))
-     (random-elt (operator-preconditions operator))))
+     (list operator (random-elt (operator-preconditions operator)))))
 
 (defun choose-operator (op-precond-pair plan current-depth max-depth)
   "For a given (operator . precondition) pair, recursively call

@@ -39,8 +39,9 @@
 
 ;SELECT SUBGOAL FUNCTIONS
 
-;;random-precondition
-(let ((random-precondition '(t a-clear)))  ; Replace with your actual random-precondition
-  (if (member random-precondition *goal-preconditions* :test #'equal)
-      (format t "Precondition ~a is in *goal-preconditions*~%" random-precondition)
-      (format t "Precondition ~a is NOT in *goal-preconditions*~%" random-precondition)))
+;;random-precondition (returns operator (s_need) and its random precondition (c) we selected)
+(let* (
+    (selected-precondition (random-precondition myplan))
+    (operator (first selected-precondition))
+    (precondition (second selected-precondition)))  ;should return T
+  (if (member precondition *goal-preconditions* :test #'equal) t nil))
