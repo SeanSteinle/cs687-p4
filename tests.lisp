@@ -35,9 +35,9 @@ Data Structures Notes:
 ;;random-precondition and random-operator-with-subgoal
 (let* (
     (myplan (make-initial-plan))
-    (selected-subgoal (pick-precond myplan))
-    (ss-operator (first selected-subgoal)) ;choose a random subgoal, get its operator and precondition
-    (ss-precondition (second selected-subgoal)) 
+    (selected-subgoal (pick-precond myplan)) ;choose a random subgoal, get its operator and precondition
+    (ss-operator (car selected-subgoal))
+    (ss-precondition (cdr selected-subgoal)) 
     (co-operator (all-effects ss-precondition myplan))) ;find an operator which will achieve our random subgoal
     (format t "random-subgoal chose a random goal from initial state: ~a~%" ss-precondition)
     (format t "random-operator-with-subgoal chose an operator for subgoal (~a): ~a~%" ss-precondition co-operator)
@@ -45,5 +45,7 @@ Data Structures Notes:
 
 #|
 TODO:
-- compare how Professor Luke's Lisp template contrasts the POP.pdf file online.
+- return as cons not list out of pick-precond
+
+NOTE: compare how Professor Luke's Lisp template contrasts the POP.pdf file online.
  |#

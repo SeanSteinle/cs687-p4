@@ -241,7 +241,7 @@ If there is no such pair, return nil"
 ;;; which has the fewest possible operators which solve it, so it fails
 ;;; the fastest if it's wrong. 
   (let ((operator (random-elt (operators-with-preconditions (plan-operators plan)))))
-      (list operator (random-elt (operator-preconditions operator))))) ;TODO: instead of picking randomly here, use a heuristic!
+      (cons operator (random-elt (operator-preconditions operator))))) ;TODO: instead of picking randomly here, use a heuristic!
 
 ;OUR HELPER for all-effects, not part of the core interface
 (defun operators-with-effect (operators subgoal) ;similar to operators-with-precondition!
