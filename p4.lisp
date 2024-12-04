@@ -257,6 +257,19 @@ on those subgoals.  Returns a solved plan, else nil if not solved."
           ;;; plan step....".  This makes the algorithm much faster.  
   )
 
+;helpers for select-subgoal
+(defun random-elt (sequence)
+  "Returns a random element from sequence"
+  (elt sequence (random (length sequence))))
+
+(defun operators-with-preconditions (operators)
+  (remove-if-not #'(lambda (op)
+                     (not (null (operator-preconditions op))))
+                 operators))
+
+(defun random-precondition (plan) ;NOTE: should be replaced with a heuristic based system at some point
+  (let ((operator (random-elt (operators-with-preconditions (plan-operators plan)))))
+     (random-elt (operator-preconditions operator))))
 
 (defun choose-operator (op-precond-pair plan current-depth max-depth)
   "For a given (operator . precondition) pair, recursively call
@@ -363,6 +376,25 @@ solved plan.  Returns the solved plan, else nil if no solved plan."
     (dolist (effect (operator-effects operator))
       (push operator (gethash effect *operators-for-precond*)))))
 
+(defun make-initial-plan ()
+  (let* ((start (make-operator
+                 :name 'start
+                 :uniq (gensym)
+                 :preconditions nil
+                 :effects *start-effects*))
+         (goal (make-operator
+                :name 'goal
+                :uniq (gensym)
+                :preconditions *goal-preconditions*
+                :effects nil))
+         (plan (make-plan
+                :operators (list start goal)
+                :orderings (list (cons start goal))
+                :links nil
+                :start start
+                :goal goal)))
+    return plan))
+                
 
 (defun do-pop ()
   (let* ((start (make-operator
@@ -384,15 +416,18 @@ solved plan.  Returns the solved plan, else nil if no solved plan."
          (depth *depth-increment*)
          solution)
     (build-operators-for-precond)
-    (format t "initial operators for preconditions: ~a" *operators-for-precond*)
+    ;(format t "initial plan:~% ~a" (print-plan plan nil 0))
     ;; Do iterative deepening search on this sucker
     (loop
        (format t "~%Search Depth: ~d" depth)
-       (setf solution (select-subgoal plan 0 depth))
-       (when solution (return)) ;; break from loop, we're done!
+       (setf solution (select-subgoal plan 0 depth)) ;should return step + some condition to focus on
+       (format t "~%after selecting subgoal, got solution:~% ~a" solution)
+       ;() ;choose-operator
+       ;() ;resolve-threats
+       (when solution (return)) ;; SHOULD REALLY be when goal open preconds is empty.
        (incf depth *depth-increment*))
     ;; found the answer if we got here
-    (format t "~%Solution Discovered:~%~%")
+    (format t "~%Solution Discovered:~%~%") ;NOTE right now the loop only executes once because select-subgoal returns a str (T)
     solution))
 
 
