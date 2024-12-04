@@ -1,0 +1,50 @@
+SIMPLE-PLAN
+The following planner is a brute-force planning partial-order (POP) system.  
+It doesn't use a heuristic, but instead just uses iterative-deepening search.  
+If you want to see a high-quality, free POP planner, check out UCPOP at
+https://www.cs.washington.edu/ai/ucpop.html
+Note that there are many better planners still at this point (POP is getting old).
+
+The following planner does not use variables -- it's propositional and not
+predicate-logic based.  Because it doesn't use
+variables, we have to write more code to describe a problem (see the Blocks World
+example at end) but it is a much easier algorithm to for you to write (you don't have to
+be involved in unification.  Happy!).  
+
+I am giving you some basic code which defines predicates, links,
+orderings, and strips operators and plans.  Then I'm giving you
+the entry code which creates a minimal plan.  Lastly, you get a
+simple two-block blocks world problem to play with, plus a three-
+block blocks world problem to play with after you get the two-blocks
+version working properly.
+
+SOME HINTS:
+1. Read up on DOTTED PAIRS
+2. Read up on ASSOCIATION LISTS
+3. Read up on STRUCTURES
+4. Read up on RETURN-FROM, RETURN, CATCH, and THROW
+5. MAPC and other mapping functions might be useful to you.
+6. So might HASH TABLES
+
+This is a tough assignment.  If you have any questions, feel free to ask me.
+If you get really stuck, I might be willing to "release" a function or two
+to you, but at a cost in project grade of course.  Still, it'd be better than
+not getting the project running.
+
+The big challenge in this project is getting the code running fast.  The class
+will likely have a *huge* variance in running speed.  I can implement this code
+to run very fast indeed, just a few milliseconds, so if your code is taking
+many seconds to run, it's time to think about optimization and algorithmic
+improvements.  
+
+Once you get the code working you might then think about how to implement some
+other problems.  Check out ones in the book and think about how to propositionalize
+them.  Or invent some fun problems.  You'll discover quickly that variables help
+a lot!  A fun project might be to write a bit of code which converts a variable-style
+problems to propositionalized ones so you don't have to write a million operators.
+Or you might test how the system scales with more complex problems.  At any rate,
+do some interesting extension of it.
+
+Provide the code for the project and a report as usual describing what you did and
+what extensions or experiments you performed.  Please do not deviate far from the
+code proper -- it's hard to grade otherwise.
