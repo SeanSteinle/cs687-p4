@@ -223,6 +223,15 @@ or before the link, and it's got an effect which counters the link's effect."
   "Plan orderings are inconsistent"
   ;; hint: cyclic-assoc-list
   )
+;OUR HELPERS for pick-precond, not part of the core interface
+(defun random-elt (sequence)
+  "Returns a random element from sequence"
+  (elt sequence (random (length sequence))))
+
+(defun operators-with-preconditions (operators)
+  (remove-if-not #'(lambda (op)
+                     (not (null (operator-preconditions op))))
+                 operators))
 
 (defun pick-precond (plan)
   "Return ONE (operator . precondition) pair in the plan that has not been met yet.
@@ -231,14 +240,19 @@ If there is no such pair, return nil"
 ;;; to pick a smart one.  Perhaps you might select the precondition
 ;;; which has the fewest possible operators which solve it, so it fails
 ;;; the fastest if it's wrong. 
-  )
+  (let ((operator (random-elt (operators-with-preconditions (plan-operators plan)))))
+      (list operator (random-elt (operator-preconditions operator))))) ;TODO: instead of picking randomly here, use a heuristic!
+
+;OUR HELPER for all-effects, not part of the core interface
+(defun operators-with-effect (operators subgoal) ;similar to operators-with-precondition!
+  (remove-if-not #'(lambda (op)
+                      (member subgoal (operator-effects op) :test #'equal))
+                  operators))
 
 (defun all-effects (precondition plan)
   "Given a precondition, returns a list of ALL operators presently IN THE PLAN which have
 effects which can achieve this precondition."
-  ;; hint: there's short, efficient way to do this, and a long,
-  ;; grotesquely inefficient way.  Don't do the inefficient way.
-  )
+  (random-elt (operators-with-effect (concatenate 'list (plan-operators plan) *operators*) precondition)))
 
 (defun all-operators (precondition)
   "Given a precondition, returns all list of ALL operator templates which have
@@ -257,34 +271,12 @@ on those subgoals.  Returns a solved plan, else nil if not solved."
           ;;; plan step....".  This makes the algorithm much faster.  
   )
 
-;helpers for select-subgoal
-(defun random-elt (sequence)
-  "Returns a random element from sequence"
-  (elt sequence (random (length sequence))))
-
-(defun operators-with-preconditions (operators)
-  (remove-if-not #'(lambda (op)
-                     (not (null (operator-preconditions op))))
-                 operators))
-
-(defun random-subgoal (plan) ;NOTE: should be replaced with a heuristic based system at some point
-  (let ((operator (random-elt (operators-with-preconditions (plan-operators plan)))))
-     (list operator (random-elt (operator-preconditions operator)))))
-
 (defun choose-operator (op-precond-pair plan current-depth max-depth)
   "For a given (operator . precondition) pair, recursively call
 hook-up-operator for all possible operators in the plan.  If that
 doesn't work, recursively call add operators and call hook-up-operators
 on them.  Returns a solved plan, else nil if not solved."
   )
-
-(defun operators-with-effect (operators subgoal) ;similar to operators-with-precondition!
-  (remove-if-not #'(lambda (op)
-                      (member subgoal (operator-effects op) :test #'equal))
-                  operators))
-
-(defun random-operator-with-subgoal (plan subgoal)
-  (random-elt (operators-with-effect (plan-operators plan) subgoal)))
 
 (defun add-operator (operator plan)
   "Given an OPERATOR and a PLAN makes a copy of the plan [the
