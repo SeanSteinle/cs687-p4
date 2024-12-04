@@ -223,6 +223,7 @@ or before the link, and it's got an effect which counters the link's effect."
   "Plan orderings are inconsistent"
   ;; hint: cyclic-assoc-list
   )
+
 ;OUR HELPERS for pick-precond, not part of the core interface
 (defun random-elt (sequence)
   "Returns a random element from sequence"
@@ -252,6 +253,8 @@ If there is no such pair, return nil"
 (defun all-effects (precondition plan)
   "Given a precondition, returns a list of ALL operators presently IN THE PLAN which have
 effects which can achieve this precondition."
+
+  ;NOTE: see below, but this function is slightly different than the template. figuring out why now.
   (random-elt (operators-with-effect (concatenate 'list (plan-operators plan) *operators*) precondition)))
 
 (defun all-operators (precondition)
@@ -259,7 +262,9 @@ effects which can achieve this precondition."
 an effect that can achieve this precondition."
   ;; hint: there's short, efficient way to do this, and a long,
   ;; grotesquely inefficient way.  Don't do the inefficient way.
-  )
+
+  ;TODO: why do we need this? can't we just search both, as I have set up in all effects? I guess we shall see!
+  (random-elt (operators-with-effect *operators* precondition)))
 
 (defun select-subgoal (plan current-depth max-depth)
   "For all possible subgoals, recursively calls choose-operator
@@ -268,7 +273,11 @@ on those subgoals.  Returns a solved plan, else nil if not solved."
           ;;; to nondeterministically choose from among all preconditions --
           ;;; you just pick one arbitrarily and that's all.  Note that the
           ;;; algorithm says "pick a plan step...", rather than "CHOOSE a
-          ;;; plan step....".  This makes the algorithm much faster.  
+          ;;; plan step....".  This makes the algorithm much faster. 
+
+          ; ^I'm not sure what this is really trying to say.
+          ; We clearly need to call choose-operator on each subgoal of the absolute goal, but I suppose
+          ; this is saying that the order in which we do that is influential (for optimization).
   )
 
 (defun choose-operator (op-precond-pair plan current-depth max-depth)
@@ -288,6 +297,24 @@ after start and before goal.  Returns the modified copy of the plan."
   ;;; also hint: use PUSHNEW to add stuff but not duplicates
   ;;; Don't use PUSHNEW everywhere instead of PUSH, just where it
   ;;; makes specific sense.
+
+  ;operator should have already been copied? plan has already been copied, but not opeerator. hm. well maybe we'll come back to that.
+  (let ((new-operator (copy-operator operator)))
+    ;how to add the operator into the plan? just insert it in the right spot like a list i guess?
+
+    ;THINGS TO DO ON ADD:
+    ;NOTE: it feels like some of these changes require touching the to-operator... should we be doing this in hook-up operator?
+    ;NOTE: consider 'hooks up the orderings so that the new operator is after start and before goal' hm.
+
+    ;update plan's operators list
+      ;new-operator should be placed just before TO action
+    ;update plan's orderings
+      ;operator-previously-before-to --> new-operator --> to-operator
+    ;update plan's links
+      ;create link with new-operator ---precondition---> to-operator
+    ;update plan's open preconditions
+      ;remove precondition from plan's list of open preconditions
+    )
   )
 
 (defun hook-up-operator (from to precondition plan
@@ -298,6 +325,20 @@ TO for the given PRECONDITION that FROM achieves for TO.  Then
 recursively  calls resolve-threats to fix any problems.  Presumes that
 PLAN is a copy that can be modified at will by HOOK-UP-OPERATOR. Returns a solved
 plan, else nil if not solved."
+  ;TODO
+  ;copy plan X
+  ;move onto add-operator <-----
+    ;it's unclear how add-operator should be used... just write the code in here for now.
+  ;resolve threats
+
+  (let* (
+    (new-plan (copy-plan plan)) ;make deep copy of plan since we'll mutate it to make a new plan, but may throw away if threats are unresolvable
+    (add-operator from plan) ;call add-operator on from action--this way the effect/precondition we want to satisfy will be accomplished
+    
+    )
+    
+  )
+
   ;;; hint: want to go fast?  The first thing you should do is
   ;;; test to see if TO is already ordered before FROM and thus
   ;;; hooking them up would make the plan inconsistent from the get-go
@@ -422,8 +463,8 @@ solved plan.  Returns the solved plan, else nil if no solved plan."
        (format t "~%Search Depth: ~d" depth)
        (setf solution (select-subgoal plan 0 depth)) ;should return step + some condition to focus on
        (format t "~%after selecting subgoal, got solution:~% ~a" solution)
-       ;() ;choose-operator
-       ;() ;resolve-threats
+       ;() ;choose-operator??
+       ;() ;resolve-threats??
        (when solution (return)) ;; SHOULD REALLY be when goal open preconds is empty.
        (incf depth *depth-increment*))
     ;; found the answer if we got here
