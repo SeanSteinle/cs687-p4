@@ -267,7 +267,7 @@ on those subgoals.  Returns a solved plan, else nil if not solved."
                      (not (null (operator-preconditions op))))
                  operators))
 
-(defun random-precondition (plan) ;NOTE: should be replaced with a heuristic based system at some point
+(defun random-subgoal (plan) ;NOTE: should be replaced with a heuristic based system at some point
   (let ((operator (random-elt (operators-with-preconditions (plan-operators plan)))))
      (list operator (random-elt (operator-preconditions operator)))))
 
@@ -277,6 +277,14 @@ hook-up-operator for all possible operators in the plan.  If that
 doesn't work, recursively call add operators and call hook-up-operators
 on them.  Returns a solved plan, else nil if not solved."
   )
+
+(defun operators-with-effect (operators subgoal) ;similar to operators-with-precondition!
+  (remove-if-not #'(lambda (op)
+                      (member subgoal (operator-effects op) :test #'equal))
+                  operators))
+
+(defun random-operator-with-subgoal (plan subgoal)
+  (random-elt (operators-with-effect (plan-operators plan) subgoal)))
 
 (defun add-operator (operator plan)
   "Given an OPERATOR and a PLAN makes a copy of the plan [the
