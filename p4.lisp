@@ -241,8 +241,13 @@ If there is no such pair, return nil"
 ;;; to pick a smart one.  Perhaps you might select the precondition
 ;;; which has the fewest possible operators which solve it, so it fails
 ;;; the fastest if it's wrong. 
-  (let ((operator (random-elt (operators-with-preconditions (plan-operators plan)))))
-      (cons operator (random-elt (operator-preconditions operator))))) ;TODO: instead of picking randomly here, use a heuristic!
+
+;TODO: instead of picking randomly here, use a heuristic!
+;NOTE: we currently pop the precondition here, can't tell where to do it from pop.pdf. could move to hook-up-operator too!
+  (let* ((operator (random-elt (operators-with-preconditions (plan-operators plan)))) ;pick operator
+    (precondition (random-elt (operator-preconditions operator)))) ;pick precondition of operator
+      (setf (operator-preconditions operator) (remove precondition (operator-preconditions operator))) ;remove from list of open preconditions
+      (cons operator precondition)))
 
 ;OUR HELPER for all-effects, not part of the core interface
 (defun operators-with-effect (operators subgoal) ;similar to operators-with-precondition!
@@ -349,9 +354,11 @@ plan, else nil if not solved."
     (push (make-link :from new-from :precond precondition :to to) (plan-links new-plan)) ;ADD CAUSAL LINK FROM-TO:PRECOND
     (push (cons new-from to) (plan-orderings new-plan)) ;ADD ORDERING CONSTRAINT (FROM . TO)
     (if new-operator-was-added (add-operator new-from to precondition new-plan)) ;ADD STEP TO PLAN, ORDERING CONSTRAINT BETWEEN (START . FROM) AND (FORM . END)
-    
+
     ;RESOLVE THREATS
     
+    ;check if plan is solved before returning!
+    (return-from hook-up-operator new-plan)
   )
   ;;; hint: want to go fast?  The first thing you should do is
   ;;; test to see if TO is already ordered before FROM and thus
