@@ -41,7 +41,8 @@ Data Structures Notes:
     (from-operator (all-effects precondition myplan))) ;find an operator which will achieve our random subgoal
     (format t "random-subgoal chose a random goal from initial state: ~a~%" precondition)
     (format t "random-operator-with-subgoal chose an operator for subgoal (~a): ~a~%" precondition from-operator)
-    (hook-up-operator from-operator to-operator precondition myplan 0 10 nil) ;final 3 args: curr-depth, max-depth, new-op-was-added
+    (hook-up-operator from-operator to-operator precondition myplan 0 10 t) ;final 3 args: curr-depth, max-depth, new-op-was-added
+    (format t "new plan after step with hook-up-operator: ~a~%" (print-plan myplan nil 0))
 )
 
 

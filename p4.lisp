@@ -332,6 +332,9 @@ TO for the given PRECONDITION that FROM achieves for TO.  Then
 recursively  calls resolve-threats to fix any problems.  Presumes that
 PLAN is a copy that can be modified at will by HOOK-UP-OPERATOR. Returns a solved
 plan, else nil if not solved."
+  ;NOTE: this function accomplishes the logic in lines 22-26 of pop.pdf's choose-operator procedure.
+  ;it's core plan-making functionality, but it doesn't direct any recursion
+
   ;TODO
   ;copy plan X
   ;move onto add-operator X
@@ -345,11 +348,10 @@ plan, else nil if not solved."
 
     (push (make-link :from new-from :precond precondition :to to) (plan-links new-plan)) ;ADD CAUSAL LINK FROM-TO:PRECOND
     (push (cons new-from to) (plan-orderings new-plan)) ;ADD ORDERING CONSTRAINT (FROM . TO)
-    (add-operator new-from to precondition new-plan) ;ADD STEP TO PLAN, ORDERING CONSTRAINT BETWEEN (START . FROM) AND (FORM . END)
-    ; ^ todo, need to add conditionality--right now double ordering constraints and getting pushed on.
-
+    (if new-operator-was-added (add-operator new-from to precondition new-plan)) ;ADD STEP TO PLAN, ORDERING CONSTRAINT BETWEEN (START . FROM) AND (FORM . END)
+    
     ;RESOLVE THREATS
-    (format t "new plan after step with hook-up-operator: ~a~%" (print-plan new-plan nil 0))
+    
   )
   ;;; hint: want to go fast?  The first thing you should do is
   ;;; test to see if TO is already ordered before FROM and thus
