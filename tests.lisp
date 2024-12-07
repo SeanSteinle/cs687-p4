@@ -33,21 +33,32 @@ Data Structures Notes:
 ;SELECT SUBGOAL FUNCTIONS
 
 ;;random-precondition and random-operator-with-subgoal
-(let* (
-    (myplan (make-initial-plan))
-    (selected-subgoal (pick-precond myplan)) ;choose a random subgoal, get its operator and precondition
-    (to-operator (car selected-subgoal))
-    (precondition (cdr selected-subgoal)) 
-    (from-operator (all-effects precondition myplan))) ;find an operator which will achieve our random subgoal
-    (format t "random-subgoal chose a random goal from initial state: ~a~%" precondition)
-    (format t "random-operator-with-subgoal chose an operator for subgoal (~a): ~a~%" precondition from-operator)
-    (setf myplan (hook-up-operator from-operator to-operator precondition myplan 0 10 t)) ;final 3 args: curr-depth, max-depth, new-op-was-added
-    (format t "new plan after step with hook-up-operator: ~a~%" (print-plan myplan nil 0))
-)
+(setf myplan (make-initial-plan))
+(format t "initial plan: ~a~%" (print-plan myplan nil 0))
+(dotimes (i 2)
+  (let* (
+      (selected-subgoal (pick-precond myplan)) ;choose a random subgoal, get its operator and precondition
+      (to-operator (car selected-subgoal))
+      (precondition (cdr selected-subgoal)) 
+      (from-operator (all-effects precondition myplan))) ;find an operator which will achieve our random subgoal
+      ;(format t "random-subgoal chose a random goal from initial state: ~a~%" precondition)
+      ;(format t "random-operator-with-subgoal chose an operator for subgoal (~a): ~a~%" precondition from-operator)
+      (setf myplan (hook-up-operator from-operator to-operator precondition myplan 0 10 t)) ;final 3 args: curr-depth, max-depth, new-op-was-added
+      (format t "(i=~a) new plan after step: ~a~%" i (print-plan myplan nil 0))))
 
+
+  ;TODO
+  ;copy plan X
+  ;move onto add-operator X
+  ;causal link, ordering constraint X
+  ;open preconditions? X
+  ;multiple step test in tests.lisp <---
+  ;resolve threats
 
 #|
 TODO:
-- test an isolated case of hooking operators to ensure that we can mutate the plan safely/correctly
+- test an isolated case of hooking operators to ensure that we can mutate the plan safely/correctly X
+- test iterative creation of a plan to ensure logical plans are being created with reasonable rules
+  - stress tests the core functions of resolve-threats, etc.
 - better understand the recursive nature/high-level structure of how function calls are made. should enable solving the 2-world blocksworld, but no optimizations
  |#

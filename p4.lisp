@@ -309,7 +309,7 @@ after start and before goal.  Returns the modified copy of the plan."
   ;;; also hint: use PUSHNEW to add stuff but not duplicates
   ;;; Don't use PUSHNEW everywhere instead of PUSH, just where it
   ;;; makes specific sense.
-  ;instead of doing pushnew, I might do a conditional in the function that calls this!
+  ;NOTE: we should do a check to not add duplicate orderings (particularly FROM -> GOAL). right now that's happening.
 
   (let* (
     (operators-insert-index (1- (position to (plan-operators plan))))) ;get insert index in operators list
@@ -317,17 +317,6 @@ after start and before goal.  Returns the modified copy of the plan."
     (insert-after (plan-operators plan) operators-insert-index from) ;update operators list (this is a void, in-place function)
     (push (cons (first (plan-operators plan)) from) (plan-orderings plan)) ;make start-from ordering
     (push (cons from (first (last (plan-operators plan)))) (plan-orderings plan)))) ;make from-end ordering - NOTE: last returns a list, so first unlists it
-
-    ;(format t "(inserting at ~a)~% updated plan: ~a~%" operators-insert-index (print-plan plan nil 0)))
-
-    ;update plan's operators list X
-      ;new-operator should be placed just before TO action
-    ;update plan's orderings X
-      ;operator-previously-before-to --> new-operator --> to-operator
-    ;update plan's links X
-      ;create link with new-operator ---precondition---> to-operator
-    ;update plan's open preconditions
-      ;remove precondition from plan's list of open preconditions
 
 (defun hook-up-operator (from to precondition plan
                          current-depth max-depth
@@ -340,13 +329,6 @@ plan, else nil if not solved."
   ;NOTE: this function accomplishes the logic in lines 22-26 of pop.pdf's choose-operator procedure.
   ;it's core plan-making functionality, but it doesn't direct any recursion
 
-  ;TODO
-  ;copy plan X
-  ;move onto add-operator X
-  ;causal link, ordering constraint <--
-  ;open preconditions? -- it might be that we're supposed to 'pop' it in all-effects so this 'already should have happened'
-  ;resolve threats
-
   (let* (
     (new-plan (copy-plan plan)) ;make deep copy so if plan is unresolvable we throw away with no effect
     (new-from (copy-operator from))) ;same for operator
@@ -357,8 +339,7 @@ plan, else nil if not solved."
 
     ;RESOLVE THREATS
     
-    ;check if plan is solved before returning!
-    (return-from hook-up-operator new-plan)
+    (return-from hook-up-operator new-plan) ;check if plan is solved before returning!
   )
   ;;; hint: want to go fast?  The first thing you should do is
   ;;; test to see if TO is already ordered before FROM and thus
@@ -478,15 +459,14 @@ solved plan.  Returns the solved plan, else nil if no solved plan."
          (depth *depth-increment*)
          solution)
     (build-operators-for-precond)
-    ;(format t "initial plan:~% ~a" (print-plan plan nil 0))
     ;; Do iterative deepening search on this sucker
     (loop
        (format t "~%Search Depth: ~d" depth)
-       (setf solution (select-subgoal plan 0 depth)) ;should return step + some condition to focus on
+       (setf solution (select-subgoal plan 0 depth))
        (format t "~%after selecting subgoal, got solution:~% ~a" solution)
-       ;() ;choose-operator??
-       ;() ;resolve-threats??
-       (when solution (return)) ;; SHOULD REALLY be when goal open preconds is empty.
+       ;() ;choose-operator?? - see prof email
+       ;() ;resolve-threats?? - see prof email
+       (when solution (return))
        (incf depth *depth-increment*))
     ;; found the answer if we got here
     (format t "~%Solution Discovered:~%~%") ;NOTE right now the loop only executes once because select-subgoal returns a str (T)
