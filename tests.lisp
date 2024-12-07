@@ -41,14 +41,12 @@ Data Structures Notes:
     (from-operator (all-effects precondition myplan))) ;find an operator which will achieve our random subgoal
     (format t "random-subgoal chose a random goal from initial state: ~a~%" precondition)
     (format t "random-operator-with-subgoal chose an operator for subgoal (~a): ~a~%" precondition from-operator)
-    ;next step -- do a hookup operator call. co-operator is from, ss-operator is to.
     (hook-up-operator from-operator to-operator precondition myplan 0 10 nil) ;final 3 args: curr-depth, max-depth, new-op-was-added
 )
 
+
 #|
 TODO:
-- better understand the recursive nature/high-level structure of how function calls are made
-- test an isolated case of hooking operators to ensure functionality is working
-
-NOTE: compare how Professor Luke's Lisp template contrasts the POP.pdf file online.
+- test an isolated case of hooking operators to ensure that we can mutate the plan safely/correctly
+- better understand the recursive nature/high-level structure of how function calls are made. should enable solving the 2-world blocksworld, but no optimizations
  |#

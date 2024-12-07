@@ -287,8 +287,15 @@ doesn't work, recursively call add operators and call hook-up-operators
 on them.  Returns a solved plan, else nil if not solved."
   )
 
-(defun add-operator (operator plan)
-  "Given an OPERATOR and a PLAN makes a copy of the plan [the
+
+(defun insert-after (lst index newelt)
+  "Helper that inserts an element in a list."
+  (push newelt (cdr (nthcdr index lst))) 
+  nil)
+  
+
+(defun add-operator (from to precondition plan)
+  "Given FROM and TO operators, a target precondition, and a plan, makes a copy of the plan [the
 operator should have already been copied out of its template at this point].
 Then adds that copied operator
 the copied plan, and hooks up the orderings so that the new operator is
@@ -299,14 +306,25 @@ after start and before goal.  Returns the modified copy of the plan."
   ;;; makes specific sense.
 
   ;operator should have already been copied? plan has already been copied, but not opeerator. hm. well maybe we'll come back to that.
-  (let ((new-operator (copy-operator operator)))
-    ;how to add the operator into the plan? just insert it in the right spot like a list i guess?
+  (let* (
+    (new-from (copy-operator from)) ;copy from operator 
+    (operators-insert-index (1- (position to (plan-operators plan)))) ;get insert index in operators list
+  )
+    (insert-after (plan-operators plan) operators-insert-index new-from) ;update operators list (this is a void, in-place function)
+    (push (cons (first (plan-operators plan)) from) (plan-orderings plan)) ;make start-from ordering
+    (push (cons from (first (last (plan-operators plan)))) (plan-orderings plan)) ;make from-end ordering - NOTE: last returns a list, so first unlists it
+
+    (format t "(inserting at ~a)~% updated plan: ~a~%" operators-insert-index (print-plan plan nil 0))
+    
+    ;TODO make this match pop.pdf's choose-operator better
+    ;TODO make sure the conditionality of this is applied!! pushnew might build it in for ya (look at insert-index)
+
 
     ;THINGS TO DO ON ADD:
     ;NOTE: it feels like some of these changes require touching the to-operator... should we be doing this in hook-up operator?
     ;NOTE: consider 'hooks up the orderings so that the new operator is after start and before goal' hm.
 
-    ;update plan's operators list
+    ;update plan's operators list X
       ;new-operator should be placed just before TO action
     ;update plan's orderings
       ;operator-previously-before-to --> new-operator --> to-operator
@@ -333,10 +351,9 @@ plan, else nil if not solved."
 
   (let* (
     (new-plan (copy-plan plan)) ;make deep copy of plan since we'll mutate it to make a new plan, but may throw away if threats are unresolvable
-    (add-operator from plan) ;call add-operator on from action--this way the effect/precondition we want to satisfy will be accomplished
-    
+    ;(add-operator from to precondition plan) ;call add-operator on from action--this way the effect/precondition we want to satisfy will be accomplished
     )
-    
+    (add-operator from to precondition new-plan) ;think this should really only be called conditionally...
   )
 
   ;;; hint: want to go fast?  The first thing you should do is
