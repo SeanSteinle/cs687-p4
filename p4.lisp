@@ -304,36 +304,25 @@ after start and before goal.  Returns the modified copy of the plan."
   ;;; also hint: use PUSHNEW to add stuff but not duplicates
   ;;; Don't use PUSHNEW everywhere instead of PUSH, just where it
   ;;; makes specific sense.
+  ;instead of doing pushnew, I might do a conditional in the function that calls this!
 
-  ;operator should have already been copied? plan has already been copied, but not opeerator. hm. well maybe we'll come back to that.
   (let* (
-    (new-from (copy-operator from)) ;copy from operator 
-    (operators-insert-index (1- (position to (plan-operators plan)))) ;get insert index in operators list
-  )
-    (insert-after (plan-operators plan) operators-insert-index new-from) ;update operators list (this is a void, in-place function)
+    (operators-insert-index (1- (position to (plan-operators plan))))) ;get insert index in operators list
+
+    (insert-after (plan-operators plan) operators-insert-index from) ;update operators list (this is a void, in-place function)
     (push (cons (first (plan-operators plan)) from) (plan-orderings plan)) ;make start-from ordering
-    (push (cons from (first (last (plan-operators plan)))) (plan-orderings plan)) ;make from-end ordering - NOTE: last returns a list, so first unlists it
+    (push (cons from (first (last (plan-operators plan)))) (plan-orderings plan)))) ;make from-end ordering - NOTE: last returns a list, so first unlists it
 
-    (format t "(inserting at ~a)~% updated plan: ~a~%" operators-insert-index (print-plan plan nil 0))
-    
-    ;TODO make this match pop.pdf's choose-operator better
-    ;TODO make sure the conditionality of this is applied!! pushnew might build it in for ya (look at insert-index)
-
-
-    ;THINGS TO DO ON ADD:
-    ;NOTE: it feels like some of these changes require touching the to-operator... should we be doing this in hook-up operator?
-    ;NOTE: consider 'hooks up the orderings so that the new operator is after start and before goal' hm.
+    ;(format t "(inserting at ~a)~% updated plan: ~a~%" operators-insert-index (print-plan plan nil 0)))
 
     ;update plan's operators list X
       ;new-operator should be placed just before TO action
-    ;update plan's orderings
+    ;update plan's orderings X
       ;operator-previously-before-to --> new-operator --> to-operator
-    ;update plan's links
+    ;update plan's links X
       ;create link with new-operator ---precondition---> to-operator
     ;update plan's open preconditions
       ;remove precondition from plan's list of open preconditions
-    )
-  )
 
 (defun hook-up-operator (from to precondition plan
                          current-depth max-depth
@@ -345,17 +334,23 @@ PLAN is a copy that can be modified at will by HOOK-UP-OPERATOR. Returns a solve
 plan, else nil if not solved."
   ;TODO
   ;copy plan X
-  ;move onto add-operator <-----
-    ;it's unclear how add-operator should be used... just write the code in here for now.
+  ;move onto add-operator X
+  ;causal link, ordering constraint <--
+  ;open preconditions? -- it might be that we're supposed to 'pop' it in all-effects so this 'already should have happened'
   ;resolve threats
 
   (let* (
-    (new-plan (copy-plan plan)) ;make deep copy of plan since we'll mutate it to make a new plan, but may throw away if threats are unresolvable
-    ;(add-operator from to precondition plan) ;call add-operator on from action--this way the effect/precondition we want to satisfy will be accomplished
-    )
-    (add-operator from to precondition new-plan) ;think this should really only be called conditionally...
-  )
+    (new-plan (copy-plan plan)) ;make deep copy so if plan is unresolvable we throw away with no effect
+    (new-from (copy-operator from))) ;same for operator
 
+    (push (make-link :from new-from :precond precondition :to to) (plan-links new-plan)) ;ADD CAUSAL LINK FROM-TO:PRECOND
+    (push (cons new-from to) (plan-orderings new-plan)) ;ADD ORDERING CONSTRAINT (FROM . TO)
+    (add-operator new-from to precondition new-plan) ;ADD STEP TO PLAN, ORDERING CONSTRAINT BETWEEN (START . FROM) AND (FORM . END)
+    ; ^ todo, need to add conditionality--right now double ordering constraints and getting pushed on.
+
+    ;RESOLVE THREATS
+    (format t "new plan after step with hook-up-operator: ~a~%" (print-plan new-plan nil 0))
+  )
   ;;; hint: want to go fast?  The first thing you should do is
   ;;; test to see if TO is already ordered before FROM and thus
   ;;; hooking them up would make the plan inconsistent from the get-go
