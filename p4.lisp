@@ -315,8 +315,8 @@ after start and before goal.  Returns the modified copy of the plan."
     (operators-insert-index (1- (position to (plan-operators plan))))) ;get insert index in operators list
 
     (insert-after (plan-operators plan) operators-insert-index from) ;update operators list (this is a void, in-place function)
-    (push (cons (first (plan-operators plan)) from) (plan-orderings plan)) ;make start-from ordering
-    (push (cons from (first (last (plan-operators plan)))) (plan-orderings plan)))) ;make from-end ordering - NOTE: last returns a list, so first unlists it
+    (push (cons (plan-start myplan) from) (plan-orderings plan)) ;make start-from ordering
+    (push (cons from (plan-goal myplan)) (plan-orderings plan)))) ;make from-end ordering
 
 (defun hook-up-operator (from to precondition plan
                          current-depth max-depth

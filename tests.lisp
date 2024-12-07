@@ -33,7 +33,7 @@ Data Structures Notes:
 ;SELECT SUBGOAL FUNCTIONS
 
 ;;random-precondition and random-operator-with-subgoal
-(setf myplan (make-initial-plan))
+(setf myplan (make-initial-plan)) ;put plan in global scope for debugging
 (format t "initial plan: ~a~%" (print-plan myplan nil 0))
 (dotimes (i 2)
   (let* (
@@ -41,11 +41,11 @@ Data Structures Notes:
       (to-operator (car selected-subgoal))
       (precondition (cdr selected-subgoal)) 
       (from-operator (all-effects precondition myplan))) ;find an operator which will achieve our random subgoal
-      ;(format t "random-subgoal chose a random goal from initial state: ~a~%" precondition)
+      (format t "random-subgoal chose a random goal from previous state: ~a~%" precondition)
       ;(format t "random-operator-with-subgoal chose an operator for subgoal (~a): ~a~%" precondition from-operator)
       (setf myplan (hook-up-operator from-operator to-operator precondition myplan 0 10 t)) ;final 3 args: curr-depth, max-depth, new-op-was-added
       (format t "(i=~a) new plan after step: ~a~%" i (print-plan myplan nil 0))))
-
+;current state: seems to construct plans with syntactical correctness, just need to add resolve-threats to make plans make sense!
 
   ;TODO
   ;copy plan X
@@ -53,6 +53,9 @@ Data Structures Notes:
   ;causal link, ordering constraint X
   ;open preconditions? X
   ;multiple step test in tests.lisp <---
+    ;at what point do the preconditions of new actions get resolved? we need to resolve them so that they aren't chosen as a subgoal
+      ;does this happen in resolve-threats?
+    
   ;resolve threats
 
 #|
