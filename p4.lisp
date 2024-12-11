@@ -204,8 +204,18 @@ plus a pointer to the start operator and to the goal operator."
 (defun before-p (operator1 operator2 plan)
   "Operator1 is ordered before operator2 in plan?"
 ;;; perhaps you have an existing function which could help here.
+  (let* ((result nil))
+    (dolist (o (plan-orderings plan))
+      (if (and (equalp operator1 (car o)) (equalp operator2 (cdr o)))
+          (setf result 'T)
+          )
+      )
+    result
+    )
   )
 
+(setf *my-plan* (make-initial-plan))
+(print (before-p (first (plan-operators *my-plan*)) (second (plan-operators *my-plan*)) *my-plan*))
 
 (defun link-exists-for-precondition-p (precond operator plan)
   "T if there's a link for the precond for a given operator, else nil.
@@ -315,8 +325,8 @@ after start and before goal.  Returns the modified copy of the plan."
     (operators-insert-index (1- (position to (plan-operators plan))))) ;get insert index in operators list
 
     (insert-after (plan-operators plan) operators-insert-index from) ;update operators list (this is a void, in-place function)
-    (push (cons (plan-start myplan) from) (plan-orderings plan)) ;make start-from ordering
-    (push (cons from (plan-goal myplan)) (plan-orderings plan)))) ;make from-end ordering
+    (push (cons (plan-start plan) from) (plan-orderings plan)) ;make start-from ordering
+    (push (cons from (plan-goal plan)) (plan-orderings plan)))) ;make from-end ordering
 
 (defun hook-up-operator (from to precondition plan
                          current-depth max-depth
@@ -436,7 +446,7 @@ solved plan.  Returns the solved plan, else nil if no solved plan."
                 :links nil
                 :start start
                 :goal goal)))
-    return plan))
+    plan))
                 
 
 (defun do-pop ()
