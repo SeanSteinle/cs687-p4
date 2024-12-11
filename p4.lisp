@@ -220,6 +220,7 @@ plus a pointer to the start operator and to the goal operator."
 (defun link-exists-for-precondition-p (precond operator plan)
   "T if there's a link for the precond for a given operator, else nil.
 precond is a predicate."
+  
   )
 
 
@@ -232,6 +233,7 @@ or before the link, and it's got an effect which counters the link's effect."
 (defun inconsistent-p (plan)
   "Plan orderings are inconsistent"
   ;; hint: cyclic-assoc-list
+  (cyclic-assoc-list (plan-orderings plan))
   )
 
 ;OUR HELPERS for pick-precond, not part of the core interface
