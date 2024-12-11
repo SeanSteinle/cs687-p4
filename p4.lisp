@@ -214,14 +214,41 @@ plus a pointer to the start operator and to the goal operator."
     )
   )
 
-(setf *my-plan* (make-initial-plan))
-(print (before-p (first (plan-operators *my-plan*)) (second (plan-operators *my-plan*)) *my-plan*))
+;;(setf *my-plan* (make-initial-plan))
+;;(print (before-p (first (plan-operators *my-plan*)) (second (plan-operators *my-plan*)) *my-plan*))
 
 (defun link-exists-for-precondition-p (precond operator plan)
   "T if there's a link for the precond for a given operator, else nil.
 precond is a predicate."
-  
+  (let* ((result nil))
+    (dolist (l (plan-links plan))
+      (dolist (p (link-precond l))
+        ;;(print p)
+        (if (and (equalp p precond) (equalp (link-to l) operator))
+            (setf result 'T)
+            )
+        )
+      )
+    result
+    )
   )
+
+;; (defun link-exists-for-precondition-p (precond operator plan)
+;;   "T if there's a link for the precond for a given operator, else nil.
+;; precond is a predicate."
+;;   (let* ((result nil))
+;;     (dolist (l (plan-links plan))
+;;       (dolist (p (link-precond l))
+;;         ;;(print p)
+;;         (if (and (equalp p precond) (equalp (link-to l) operator))
+;;             (setf result 'T)
+;;             )
+;;         )
+;;       )
+;;     result
+;;     )
+;;   )
+;; (print (link-exists-for-precondition-p (first (operator-preconditions (fourth (plan-operators myplan)))) (fourth (plan-operators myplan)) myplan))
 
 
 (defun operator-threatens-link-p (operator link plan)
